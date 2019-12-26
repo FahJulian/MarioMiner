@@ -38,6 +38,9 @@ public class HUD{
 		g.setColor(Color.LIGHT_GRAY);
 		g.fillRect(20, 20, 120, 20);
 		
+		g.setColor(Color.RED);
+		g.fillRect(20, 20, (int) (1.2f * game.grid.player.getHealth()), 20);
+		
 		g.setColor(Color.BLACK);
 		g.drawRect(20, 20, 120, 20);
 	}

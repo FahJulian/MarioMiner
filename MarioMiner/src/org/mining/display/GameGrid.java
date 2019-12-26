@@ -19,7 +19,7 @@ public class GameGrid{
 	public static final int ROW_COUNT = Game.CONTENT_HEIGHT / BLOCK_SIZE;
 	
 	/** The default spawn position of the player */
-	private static final Point SPAWN_POS = new Point(Game.CONTENT_CENTER_X,  Game.CONTENT_CENTER_Y - 2 * BLOCK_SIZE);
+	public static final Point SPAWN_POS = new Point(Game.CONTENT_CENTER_X,  Game.CONTENT_CENTER_Y - 2 * BLOCK_SIZE);
 	
 	/** The Game instance the GridPanel is part of */
 	private Game game;
@@ -43,27 +43,6 @@ public class GameGrid{
 		}
 	}
 	
-	/** Resets all blocks in the grid to the default */
-	public void reset() {
-		// Set the first 25% of the screen to be air blocks
-		for (int row = 0; row <= ROW_COUNT * 0.25f; row++)
-			for (int col = 0; col < COL_COUNT; col++) {
-				setBlock(0, row, col, BlockType.AIR);
-				setBlock(0, row, col, BlockType.AIR);
-			}
-		
-		// Set the rest of the screen to be stone with dirt behind
-		for (int row = (int) (ROW_COUNT * 0.25f + 1); row < ROW_COUNT; row++)
-			for (int col = 0; col < COL_COUNT; col++) {
-				setBlock(0, row, col, BlockType.STONE);
-				setBlock(1, row, col, BlockType.DIRT);
-			}
-	}
-	
-	public void digBlock(int row, int col) {
-		setBlock(0, row, col, BlockType.VOID);
-	}
-	
 	public void render(Graphics g) {
 		for (int row = 0; row < blocks[0].length; row++) 
 			for (int col = 0; col < blocks[0][row].length; col++) {
@@ -82,6 +61,27 @@ public class GameGrid{
 		}
 	}
 	
+	/** Resets all blocks in the grid to the default */
+	public void reset() {
+		// Set the first 25% of the screen to be air blocks
+		for (int row = 0; row <= ROW_COUNT * 0.25f; row++)
+			for (int col = 0; col < COL_COUNT; col++) {
+				setBlock(0, row, col, BlockType.AIR);
+				setBlock(0, row, col, BlockType.AIR);
+			}
+		
+		// Set the rest of the screen to be stone with dirt behind
+		for (int row = (int) (ROW_COUNT * 0.25f + 1); row < ROW_COUNT; row++)
+			for (int col = 0; col < COL_COUNT; col++) {
+				setBlock(0, row, col, BlockType.STONE);
+				setBlock(1, row, col, BlockType.DIRT);
+			}
+		
+		player.respawn();
+	}
+	
+	
+	
 	private void renderDigging(Graphics g) {
 		if (player.getDigDir() == null) return;
 		
@@ -91,18 +91,6 @@ public class GameGrid{
 		case 3: BlockType.DIG_STATE_3.render(player.getDigPos().x, player.getDigPos().y, g); break;
 		case 4: BlockType.DIG_STATE_4.render(player.getDigPos().x, player.getDigPos().y, g); break;
 		}
-	}
-	
-	private void setBlock(int layer, int row, int col, BlockType type) {
-		blocks[layer][row][col] = new Block(type, row, col, this);
-	}
-	
-	public Block getBlock(int layer, int row, int col) {
-		return blocks[layer][row][col];
-	}
-	
-	public Block getBlockAtPosition(int layer, Point p) {
-		return blocks[layer][p.y / BLOCK_SIZE][p.x / BLOCK_SIZE];
 	}
 	
 	/**
@@ -130,12 +118,20 @@ public class GameGrid{
 		}
 		return null;
 	}
-	
-	public int getHeight() {
-		return Game.CONTENT_HEIGHT;
+
+	public Block getBlockAtPosition(int layer, Point p) {
+		return blocks[layer][p.y / BLOCK_SIZE][p.x / BLOCK_SIZE];
 	}
 	
-	public int getWidth() {
-		return Game.CONTENT_WIDTH;
+	public Block getBlock(int layer, int row, int col) {
+		return blocks[layer][row][col];
+	}
+	
+	private void setBlock(int layer, int row, int col, BlockType type) {
+		blocks[layer][row][col] = new Block(type, row, col, this);
+	}
+	
+	public void digBlock(int row, int col) {
+		setBlock(0, row, col, BlockType.VOID);
 	}
 }

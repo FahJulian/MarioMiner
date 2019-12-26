@@ -10,7 +10,7 @@ public class Player extends GridObject{
 	
 	/** The collision handler responsible for all player related collisions */
 	public final PlayerCollisionHandler COLLISIONS = new PlayerCollisionHandler(this);
-	
+
 	/** The direction the player is currently digging in */
 	private Direction digDir = null;
 	/** The state the Digging is currently in */
@@ -20,11 +20,15 @@ public class Player extends GridObject{
 	/** The block position that is being dug */
 	private Point digPos;
 	
+	/** The players health: min = 0, max = 100 */
+	private int health;
+	
 	/** Keeps track of whether or not the player is walking left (index 0) and right (index 1) */
 	private boolean[] walking = new boolean[] {false, false};
 	
 	public Player(int x, int y, int size, GameGrid grid, String img_path) {
 		super(x, y, size, grid, img_path);
+		health = 100;
 	}
 
 	@Override
@@ -37,6 +41,15 @@ public class Player extends GridObject{
 	@Override
 	public void render(Graphics g) {
 		super.render(g);
+	}
+	
+	public void respawn() {
+		health = 100;
+		x = GameGrid.SPAWN_POS.x;
+		y = GameGrid.SPAWN_POS.y;
+		velX = 0;
+		velY = 0;
+		walking = new boolean[] {false, false};
 	}
 
 	private void tickMovement() {
@@ -51,15 +64,19 @@ public class Player extends GridObject{
 		for (int j = 1; j <= velY; j++) 
 			if (COLLISIONS.canMoveOnePx(Direction.DOWN))
 				moveOnePx(Direction.DOWN);
+			else {
+				if (velY >= 19) health -= velY / 2;
+				velY = 0;
+			}
 		
 		for (int j = -1; j >= velY; j--) 
 			if (COLLISIONS.canMoveOnePx(Direction.UP)) 
 				moveOnePx(Direction.UP);
+			else velY = 0;
 	}
 	
 	private void tickGravity() {
 		if (!COLLISIONS.isStandingOnBlock()) velY += 1;
-		else velY = 0;
 	}
 	
 	private void tickDig() {
@@ -163,5 +180,9 @@ public class Player extends GridObject{
 		case RIGHT: return walking[1];
 		default: System.err.println("Cant walk up or down"); return false;
 		}
+	}
+	
+	public int getHealth() {
+		return health;
 	}
 }
