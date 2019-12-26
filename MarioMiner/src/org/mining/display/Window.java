@@ -4,9 +4,6 @@ import java.awt.Dimension;
 
 import javax.swing.JFrame;
 
-import org.mining.managers.IngameKeyHandler;
-import org.mining.managers.MenuKeyHandler;
-
 public class Window extends javax.swing.JFrame{
 
 	private static final long serialVersionUID = 610813257643608931L;

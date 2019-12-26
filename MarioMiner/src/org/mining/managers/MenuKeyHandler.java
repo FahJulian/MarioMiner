@@ -64,6 +64,11 @@ public class MenuKeyHandler implements java.awt.event.KeyListener{
 		case INGAME:
 			break;
 		case GAME_OVER:
+			switch (e.getKeyCode()) {
+			case KeyEvent.VK_ENTER:
+				game.reset();
+				game.resume();
+			}
 			break;
 		}
 	}

@@ -70,8 +70,7 @@ public class Game extends javax.swing.JPanel{
 		addKeyListener(new MenuKeyHandler(this));
 		addKeyListener(new IngameKeyHandler(this, grid, grid.player));
 		
-		this.requestFocus();	
-		System.out.println(CENTER_X);
+		this.requestFocus();
 	}
 	
 	/**
@@ -122,12 +121,24 @@ public class Game extends javax.swing.JPanel{
 	}
 	
 	private void tick() {
+		if (grid.player.getHealth() <= 0)
+			gameover();
 		grid.tick();
 		hud.tick();
 	}
 	
 	public void render() {
 		repaint();
+	}
+	
+	/**
+	 * Resets all game variables to their default values. Should be used when
+	 * game is restarted or loaded from a file
+	 */
+	public void reset() {
+		logicTimer.reset();
+		grid.reset();
+		hud.reset();
 	}
 	
 	@Override
@@ -157,16 +168,9 @@ public class Game extends javax.swing.JPanel{
 		}
 	}
 	
-	/**
-	 * Resets all game variables to their default values. Should be used when
-	 * game is restarted or loaded from a file
-	 */
-	public void reset() {
-		logicTimer.reset();
-		grid.reset();
-		hud.reset();
-		
-		resume();
+	public void gameover() {
+		state = GameState.GAME_OVER;
+		logicTimer.setPaused(true);
 	}
 	
 	public void pause() {

@@ -2,7 +2,7 @@ package org.mining.managers;
 
 import java.awt.Point;
 
-import org.mining.game.Block;
+import org.mining.display.Game;
 import org.mining.game.Direction;
 import org.mining.game.Player;
 
@@ -20,7 +20,7 @@ public class PlayerCollisionHandler {
 	}
 	
 	public boolean isStandingOnBlock() {
-		if (player.getY() + player.getSize() == player.grid.getHeight() - 1) return true;
+		if (player.getY() + player.getSize() == Game.CONTENT_HEIGHT - 1) return true;
 		
 		Point[] positions = new Point[] {
 				new Point(player.getX(), player.getY() + player.getSize() + 1),
@@ -57,13 +57,13 @@ public class PlayerCollisionHandler {
 			if (player.getX() <= 0) return true;
 			else break;
 		case RIGHT:
-			if (player.getX() + player.getSize() >= player.grid.getWidth() - 1) return true;
+			if (player.getX() + player.getSize() >= Game.CONTENT_WIDTH - 1) return true;
 			else break;
 		case UP:
 			if (player.getY() <= 0) return true;
 			else break;
 		case DOWN:
-			if (player.getY() + player.getSize() >= player.grid.getHeight() - 1) return true;
+			if (player.getY() + player.getSize() >= Game.CONTENT_HEIGHT - 1) return true;
 			else break;
 		}
 		
