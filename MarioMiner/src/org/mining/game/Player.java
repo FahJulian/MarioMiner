@@ -26,8 +26,17 @@ public class Player extends GridObject{
 	/** Keeps track of whether or not the player is walking left (index 0) and right (index 1) */
 	private boolean[] walking = new boolean[] {false, false};
 	
+	/** The players inventory -> Index 0-8 is the tool-bar, 9-35 the rest */
+	private BlockType[] inventory;
+	/** The tool-bar slot that is currently selected */
+	private int selectedSlot = 0;
+	
 	public Player(int x, int y, int size, GameGrid grid, String img_path) {
 		super(x, y, size, grid, img_path);
+		
+		inventory = new BlockType[36];
+		inventory[0] = BlockType.STONE;
+				
 		health = 100;
 	}
 
@@ -80,7 +89,7 @@ public class Player extends GridObject{
 	}
 	
 	private void tickDig() {
-		if (!COLLISIONS.isDigStillViable()) stopDigging();
+		if (!COLLISIONS.isDigStillAllowed()) stopDigging();
 		
 		if (digDir != null && System.currentTimeMillis() - digTimer > 1000) {
 			if (digState < 4) {
@@ -88,7 +97,7 @@ public class Player extends GridObject{
 				digTimer = System.currentTimeMillis();
 			}
 			if (digState == 4) {
-				grid.digBlock(digPos.y / GameGrid.BLOCK_SIZE + 1, digPos.x / GameGrid.BLOCK_SIZE);
+				grid.digBlock(digPos.y / GameGrid.BLOCK_SIZE, digPos.x / GameGrid.BLOCK_SIZE);
 				stopDigging();
 			}
 		}
@@ -107,7 +116,7 @@ public class Player extends GridObject{
 			this.digPos = null;
 		}
 		
-		if (!COLLISIONS.isDigStartViable()) stopDigging();
+		if (!COLLISIONS.isDigStartAllowed()) stopDigging();
 	}
 	
 	public void stopDigging() {
@@ -149,6 +158,17 @@ public class Player extends GridObject{
 		if (COLLISIONS.isStandingOnBlock()) velY -= 13;
 	}
 	
+	public void placeSelectedBlock(Direction dir) {
+		if (inventory[selectedSlot] != null && COLLISIONS.isBlockPlaceAllowed(dir))
+			
+			switch (dir) {
+			case UP: 	grid.setBlock(0, getRow() - 1, getCol(), inventory[selectedSlot]); break;
+			case DOWN: 	grid.setBlock(0, getRow() + 1, getCol(), inventory[selectedSlot]); break;
+			case LEFT: 	grid.setBlock(0, getRow(), getCol() - 1, inventory[selectedSlot]); break;
+			case RIGHT: grid.setBlock(0, getRow(), getCol() + 1, inventory[selectedSlot]); break;
+			}
+	}
+	
 	private void moveOnePx(Direction dir) {
 		switch (dir) {
 		case LEFT: x -= 1; return;
@@ -184,5 +204,17 @@ public class Player extends GridObject{
 	
 	public int getHealth() {
 		return health;
+	}
+	
+	public BlockType[] getInventory() {
+		return this.inventory;
+	}
+	
+	public int getSelectedSlot() {
+		return this.selectedSlot;
+	}
+	
+	public void selectSlot(int slot) {
+		this.selectedSlot = slot;
 	}
 }

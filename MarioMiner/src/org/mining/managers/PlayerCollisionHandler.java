@@ -3,6 +3,8 @@ package org.mining.managers;
 import java.awt.Point;
 
 import org.mining.display.Game;
+import org.mining.display.GameGrid;
+import org.mining.game.Block;
 import org.mining.game.Direction;
 import org.mining.game.Player;
 
@@ -35,7 +37,7 @@ public class PlayerCollisionHandler {
 		return false;
 	}
 	
-	public boolean isDigStartViable(){
+	public boolean isDigStartAllowed(){
 		return !(player.getDigPos() == null ||
 				player.getDigPos().getX() - player.getX() > 2 * player.getSize() ||
 				player.getX() - player.getDigPos().getX() > 2 * player.getSize() ||
@@ -43,12 +45,41 @@ public class PlayerCollisionHandler {
 				player.getY() - player.getDigPos().getY() > 2 * player.getSize());
 	}
 	
-	public boolean isDigStillViable() {
+	public boolean isDigStillAllowed() {
 		return !(player.getDigPos() == null ||
 				player.getDigPos().getX() - player.getX() > 2.5f * player.getSize() ||
 				player.getX() - player.getDigPos().getX() > 2.5f * player.getSize() ||
 				player.getDigPos().getY() - player.getY() > 2.5f * player.getSize() ||
 				player.getY() - player.getDigPos().getY() > 2.5f * player.getSize());
+	}
+	
+	public boolean isBlockPlaceAllowed(Direction dir) {
+		Block b = null;
+		Point p = null;
+		
+		switch (dir) {
+		case UP:
+			p = GameGrid.coordToGridPos(new Point(player.getCenterX(), player.getY()));
+			b = player.grid.getNextDiggableBlock(0, p.y, p.x, dir);
+			break;
+		case DOWN:
+			p = GameGrid.coordToGridPos(new Point(player.getCenterX(), player.getY() + player.getSize()));
+			b = player.grid.getNextDiggableBlock(0, p.y, p.x, dir);
+			break;
+		case LEFT:
+			p = GameGrid.coordToGridPos(new Point(player.getX(), player.getCenterY()));
+			b = player.grid.getNextDiggableBlock(0, p.y, p.x, dir);
+			break;
+		case RIGHT:
+			p = GameGrid.coordToGridPos(new Point(player.getX() + player.getSize(), player.getCenterY()));
+			b = player.grid.getNextDiggableBlock(0, p.y, p.x, dir);
+			break;
+		}
+		
+		if (b == null) return false;
+		else
+			return ((Math.abs(p.x - b.getCol()) == 2 && Math.abs(p.y - b.getRow()) <= 2) ||
+					(Math.abs(p.x - b.getCol()) <= 2 && Math.abs(p.y - b.getRow()) == 2));
 	}
 	
 	private boolean wouldCollideWithWall(Direction dir) {

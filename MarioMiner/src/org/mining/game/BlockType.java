@@ -1,5 +1,6 @@
 package org.mining.game;
 
+import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 
@@ -25,6 +26,7 @@ public enum BlockType {
 	/* Stone tile */
 	STONE("stone.png", true, false);
 
+	private boolean DEBUGGING = false;
 	
 	/** The Tile's rendering image */
 	private BufferedImage img;
@@ -50,6 +52,11 @@ public enum BlockType {
 	 */
 	public void render(int x, int y, Graphics g) {
 		g.drawImage(img, x, y, null);
+		
+		if (DEBUGGING) {
+			g.setColor(Color.RED);
+			g.fillRect(x + GameGrid.BLOCK_SIZE / 2 - 5, y + GameGrid.BLOCK_SIZE / 2 - 5, 10, 10);
+		}
 	}
 	
 	/**

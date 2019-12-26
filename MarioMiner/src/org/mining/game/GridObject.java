@@ -67,6 +67,9 @@ public abstract class GridObject {
 	public int getCol() {
 		return x / GameGrid.BLOCK_SIZE;
 	}
+	public Point getCenter() {
+		return new Point(getCenterX(), getCenterY());
+	}
 	public int getCenterX() {
 		return this.x + this.size / 2;
 	}
