@@ -67,7 +67,7 @@ public class GameGrid{
 		for (int row = 0; row <= ROW_COUNT * 0.25f; row++)
 			for (int col = 0; col < COL_COUNT; col++) {
 				setBlock(0, row, col, BlockType.AIR);
-				setBlock(0, row, col, BlockType.AIR);
+				setBlock(1, row, col, BlockType.AIR);
 			}
 		
 		// Set the rest of the screen to be stone with dirt behind
@@ -127,11 +127,15 @@ public class GameGrid{
 		return blocks[layer][row][col];
 	}
 	
-	private void setBlock(int layer, int row, int col, BlockType type) {
+	public void setBlock(int layer, int row, int col, BlockType type) {
 		blocks[layer][row][col] = new Block(type, row, col, this);
 	}
 	
 	public void digBlock(int row, int col) {
 		setBlock(0, row, col, BlockType.VOID);
+	}
+	
+	public static Point coordToGridPos(Point p) {
+		return new Point(p.x / BLOCK_SIZE, p.y / BLOCK_SIZE);
 	}
 }

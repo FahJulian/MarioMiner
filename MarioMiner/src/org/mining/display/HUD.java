@@ -47,11 +47,27 @@ public class HUD{
 	
 	private void renderToolbar(Graphics g) {
 		for (int i = 0; i < 9; i++) {
-			g.setColor(Color.LIGHT_GRAY);
+			g.setColor(Color.BLACK);
 			g.fillRect(tbX + i * 60, tbY, tbItemSize, tbItemSize);
 			
-			g.setColor(Color.BLACK);
-			g.drawRect(tbX + i * 60, tbY, tbItemSize, tbItemSize);
+			g.setColor(Color.LIGHT_GRAY);
+			if (game.grid.player.getSelectedSlot() == i)
+				g.fillRect(tbX + i * 60 + 4, tbY + 4, tbItemSize - 8, tbItemSize - 8);
+			else
+				g.fillRect(tbX + i * 60 + 2, tbY + 2, tbItemSize - 4, tbItemSize - 4);
+			
+			if (game.grid.player.getInventory()[i] != null)
+				switch (game.grid.player.getInventory()[i]) {
+				case DIRT:
+					g.setColor(new Color(60, 40, 0));
+					g.fillRect(tbX + i *60 + 5, tbY + 5, tbItemSize - 10, tbItemSize - 10);
+					break;
+				case STONE:
+					g.setColor(new Color(110, 110, 110));
+					g.fillRect(tbX + i *60 + 5, tbY + 5, tbItemSize - 10, tbItemSize - 10);
+				default:
+					break;
+				}
 		}
 	}
 }

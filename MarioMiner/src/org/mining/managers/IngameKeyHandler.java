@@ -17,6 +17,9 @@ public class IngameKeyHandler implements java.awt.event.KeyListener {
 	private GameGrid grid;
 	/** The player thats being controlled */
 	private Player player;
+	
+	/** A switch for whether or not shift is pressed */
+	private boolean shiftPressed = false;
 
 	public IngameKeyHandler(Game game, GameGrid grid, Player player) {
 		this.game = game;
@@ -32,19 +35,24 @@ public class IngameKeyHandler implements java.awt.event.KeyListener {
 		case KeyEvent.VK_ESCAPE:
 			player.stopDigging();
 			game.pause();
+			shiftPressed = false;
 			break;
 			
 		case KeyEvent.VK_UP:
-			player.startDiggingIfViable(Direction.UP);
+			if (shiftPressed) player.placeSelectedBlock(Direction.UP);
+			else player.startDiggingIfViable(Direction.UP);
 			break;
 		case KeyEvent.VK_DOWN:
-			player.startDiggingIfViable(Direction.DOWN);
+			if (shiftPressed) player.placeSelectedBlock(Direction.DOWN);
+			else player.startDiggingIfViable(Direction.DOWN);
 			break;
 		case KeyEvent.VK_LEFT:
-			player.startDiggingIfViable(Direction.LEFT);
+			if (shiftPressed) player.placeSelectedBlock(Direction.LEFT);
+			else player.startDiggingIfViable(Direction.LEFT);
 			break;
 		case KeyEvent.VK_RIGHT:
-			player.startDiggingIfViable(Direction.RIGHT);
+			if (shiftPressed) player.placeSelectedBlock(Direction.RIGHT);
+			else player.startDiggingIfViable(Direction.RIGHT);
 			break;
 		
 		case KeyEvent.VK_A:
@@ -56,6 +64,10 @@ public class IngameKeyHandler implements java.awt.event.KeyListener {
 			
 		case KeyEvent.VK_SPACE:
 			player.jump();
+			break;
+			
+		case KeyEvent.VK_SHIFT:
+			shiftPressed = true;
 			break;
 		}
 	}
@@ -78,6 +90,20 @@ public class IngameKeyHandler implements java.awt.event.KeyListener {
 			break;
 		case KeyEvent.VK_D:
 			if (player.isWalking(Direction.RIGHT)) player.stopWalking(Direction.RIGHT);
+			break;
+			
+		case KeyEvent.VK_1: player.selectSlot(0); break;
+		case KeyEvent.VK_2: player.selectSlot(1); break;
+		case KeyEvent.VK_3: player.selectSlot(2); break;
+		case KeyEvent.VK_4: player.selectSlot(3); break;
+		case KeyEvent.VK_5: player.selectSlot(4); break;
+		case KeyEvent.VK_6: player.selectSlot(5); break;
+		case KeyEvent.VK_7: player.selectSlot(6); break;
+		case KeyEvent.VK_8: player.selectSlot(7); break;
+		case KeyEvent.VK_9: player.selectSlot(8); break;
+		
+		case KeyEvent.VK_SHIFT:
+			shiftPressed = false;
 			break;
 		}	
 	}

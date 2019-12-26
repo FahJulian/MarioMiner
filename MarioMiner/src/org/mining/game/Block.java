@@ -10,7 +10,7 @@ public class Block extends GridObject{
 	private BlockType type;
 	
 	public Block(BlockType type, int row, int col, GameGrid grid) {
-		super(col * GameGrid.BLOCK_SIZE, row * GameGrid.BLOCK_SIZE - 1, GameGrid.BLOCK_SIZE - 1, grid);
+		super(col * GameGrid.BLOCK_SIZE, row * GameGrid.BLOCK_SIZE, GameGrid.BLOCK_SIZE - 1, grid);
 		this.type = type;
 	}
 	
