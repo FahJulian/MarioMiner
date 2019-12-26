@@ -1,11 +1,11 @@
 package org.mining;
 
-import org.mining.display.Mining;
+import org.mining.display.Game;
 
 public class Main {
 	
 	public static void main (String... args) {
-		Mining game = new Mining();
+		Game game = new Game();
 		game.start();
 	}
 }

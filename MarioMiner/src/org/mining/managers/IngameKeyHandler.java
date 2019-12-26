@@ -2,36 +2,36 @@ package org.mining.managers;
 
 import java.awt.event.KeyEvent;
 
+import org.mining.display.Game;
 import org.mining.display.GameGrid;
 import org.mining.display.GameState;
-import org.mining.display.Mining;
 import org.mining.game.Direction;
 import org.mining.game.Player;
 
 public class IngameKeyHandler implements java.awt.event.KeyListener {
 
 	/** The Game thats being controlled */
-	private Mining mining;
+	private Game game;
 	/** The GameGrid thats being controlled */
 	@SuppressWarnings("unused")
 	private GameGrid grid;
 	/** The player thats being controlled */
 	private Player player;
 
-	public IngameKeyHandler(Mining mining, GameGrid grid, Player player) {
-		this.mining = mining;
+	public IngameKeyHandler(Game game, GameGrid grid, Player player) {
+		this.game = game;
 		this.grid = grid;
 		this.player = player;
 	}
 
 	@Override
 	public void keyPressed(KeyEvent e) {
-		if (!(mining.getGameState() == GameState.INGAME)) return;
+		if (!(game.getGameState() == GameState.INGAME)) return;
 		
 		switch (e.getKeyCode()) {
 		case KeyEvent.VK_ESCAPE:
 			player.stopDigging();
-			mining.pause();
+			game.pause();
 			break;
 			
 		case KeyEvent.VK_UP:
@@ -62,7 +62,7 @@ public class IngameKeyHandler implements java.awt.event.KeyListener {
 
 	@Override
 	public void keyReleased(KeyEvent e) {
-		if (!(mining.getGameState() == GameState.INGAME))
+		if (!(game.getGameState() == GameState.INGAME))
 			return;
 		
 		switch (e.getKeyCode()) {
@@ -84,7 +84,7 @@ public class IngameKeyHandler implements java.awt.event.KeyListener {
 
 	@Override
 	public void keyTyped(KeyEvent e) {
-		if (!(mining.getGameState() == GameState.INGAME))
+		if (!(game.getGameState() == GameState.INGAME))
 			return;
 
 	}
