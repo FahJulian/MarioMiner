@@ -67,6 +67,9 @@ public abstract class GridObject {
 	public int getCol() {
 		return x / GameGrid.BLOCK_SIZE;
 	}
+	public Point getCenter() {
+		return new Point(getCenterX(), getCenterY());
+	}
 	public int getCenterX() {
 		return this.x + this.size / 2;
 	}
@@ -78,6 +81,12 @@ public abstract class GridObject {
 	}
 	public int getCenterCol() {
 		return getCenterX() / GameGrid.BLOCK_SIZE;
+	}
+	public int getRightCol() {
+		return (getX() + getSize()) / GameGrid.BLOCK_SIZE;
+	}
+	public int getBottomRow() {
+		return (getY() + getSize()) / GameGrid.BLOCK_SIZE;
 	}
 	public Point getPos() {
 		return new Point(x, y);

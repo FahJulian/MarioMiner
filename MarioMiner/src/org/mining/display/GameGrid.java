@@ -1,8 +1,6 @@
 package org.mining.display;
 
 import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Point;
 
@@ -10,37 +8,22 @@ import org.mining.game.Block;
 import org.mining.game.BlockType;
 import org.mining.game.Direction;
 import org.mining.game.Player;
+import org.mining.managers.MapBuilder;
 
-public class GameGrid extends javax.swing.JPanel{
-
-	private static final long serialVersionUID = 5682318183794056493L;
+public class GameGrid{
 	
 	/** The number of pixels that make up one tile */
 	public static final int BLOCK_SIZE = 64;
 	/** The number of columns on the board */
-	public static final int COL_COUNT = 960 / BLOCK_SIZE;	
+	public static final int COL_COUNT = Game.CONTENT_WIDTH / BLOCK_SIZE;	
 	/** The number of rows on the board */
-	public static final int ROW_COUNT = 540 / BLOCK_SIZE;	
-	/** The central x coordinate of the grid */
-	public static final int CENTER_X = COL_COUNT * BLOCK_SIZE / 2;	
-	/** The central y coordinate of the grid */
-	public static final int CENTER_Y = ROW_COUNT * BLOCK_SIZE / 2;	
-	/** The total width of the panel */
-	public static final int WIDTH = COL_COUNT * BLOCK_SIZE;	
-	/** The total height of the panel */
-	public static final int HEIGHT = ROW_COUNT * BLOCK_SIZE;
-	
-	/** The larger font to draw */
-	private static final Font LARGE_FONT = new Font("Tahoma", Font.BOLD, 16);
-	/** The smaller font to draw */
-	private static final Font SMALL_FONT = new Font("Tahoma", Font.BOLD, 16);
+	public static final int ROW_COUNT = Game.CONTENT_HEIGHT / BLOCK_SIZE;
 	
 	/** The default spawn position of the player */
-	private static final Point SPAWN_POS = new Point(CENTER_X - (CENTER_X % BLOCK_SIZE),
-													 CENTER_Y - (CENTER_Y % BLOCK_SIZE) - 2 * BLOCK_SIZE);
+	public static final Point SPAWN_POS = new Point(Game.CONTENT_CENTER_X, (int) (ROW_COUNT * 0.25f) * BLOCK_SIZE);
 	
-	/** The Mining instance the GridPanel is part of */
-	private Mining mining;
+	/** The Game instance the GridPanel is part of */
+	private Game game;
 	
 	/** The Player of the Game */
 	public Player player;
@@ -48,89 +31,48 @@ public class GameGrid extends javax.swing.JPanel{
 	/** The blocks that make up the grid */
 	private Block[][][] blocks;
 	
-	public GameGrid(Mining mining) {
-		this.mining = mining; 
+	public GameGrid(Game game) {
+		this.game = game; 
 		this.blocks = new Block[2][ROW_COUNT][COL_COUNT];
-		this.player = new Player(SPAWN_POS.x, SPAWN_POS.y, BLOCK_SIZE - 7, this,
-				"rsc/img/" + BLOCK_SIZE + "/player_small.png");
-		reset();
-		
-		setPreferredSize(new Dimension(WIDTH, HEIGHT));
-		setBackground(Color.BLACK);
+		this.player = new Player(SPAWN_POS.x, SPAWN_POS.y, BLOCK_SIZE - 7, this, true);
 	}
 
 	public void tick() {
-		if (mining.getGameState() == GameState.INGAME) {
+		if (game.getGameState() == GameState.INGAME) {
 			player.tick();
 		}
 	}
 	
-	public void render() {
-		repaint();
+	public void render(Graphics g) {
+		for (int row = 0; row < blocks[0].length; row++) 
+			for (int col = 0; col < blocks[0][row].length; col++) {
+				if (blocks[0][row][col].getType() == BlockType.VOID) {
+					blocks[1][row][col].render(g);
+					if (blocks[1][row][col].getType() != BlockType.AIR)
+						BlockType.LAYER2_COVER.render(col * BLOCK_SIZE, row * BLOCK_SIZE, g);
+				}
+				else blocks[0][row][col].render(g);
+			}
+		player.render(g);
+		renderDigging(g);
+		
+		if (game.getGameState() == GameState.PAUSED) {
+			g.setFont(Game.LARGE_FONT);
+			g.setColor(Color.RED);
+			String msg = "PAUSED";
+			g.drawString(msg, Game.CENTER_X - g.getFontMetrics().stringWidth(msg) / 2, Game.CENTER_Y);
+		}
 	}
 	
 	/** Resets all blocks in the grid to the default */
 	public void reset() {
-		// Set the first 25% of the screen to be air blocks
-		for (int row = 0; row <= ROW_COUNT * 0.25f; row++)
-			for (int col = 0; col < COL_COUNT; col++) {
-				setBlock(0, row, col, BlockType.AIR);
-				setBlock(0, row, col, BlockType.AIR);
-			}
+		blocks = MapBuilder.buildFlatMap(this, ROW_COUNT, COL_COUNT, 
+				new int[] {4, 5, 8, ROW_COUNT},
+				new BlockType[] {BlockType.VOID, BlockType.GRASS, BlockType.DIRT, BlockType.STONE }, 
+				new int[] {4, ROW_COUNT}, 
+				new BlockType[] {BlockType.AIR, BlockType.DIRT});
 		
-		// Set the rest of the screen to be stone with dirt behind
-		for (int row = (int) (ROW_COUNT * 0.25f + 1); row < ROW_COUNT; row++)
-			for (int col = 0; col < COL_COUNT; col++) {
-				setBlock(0, row, col, BlockType.STONE);
-				setBlock(1, row, col, BlockType.DIRT);
-			}
-	}
-	
-	public void digBlock(int row, int col) {
-		setBlock(0, row, col, BlockType.VOID);
-	}
-	
-	@Override
-	protected void paintComponent(Graphics g) {
-		super.paintComponent(g);
-		
-		String msg;
-		boolean drawPausedString = false;
-		switch (mining.getGameState()) {
-		case NEW_GAME:
-		case GAME_OVER:	// fall-trough
-			g.setFont(LARGE_FONT);
-			g.setColor(Color.WHITE);
-			msg = (mining.getGameState() == GameState.NEW_GAME) ? 
-				"MARIO MINER" : "GAME OVER";
-			g.drawString(msg, CENTER_X - g.getFontMetrics().stringWidth(msg) / 2,  150);
-			
-			g.setFont(SMALL_FONT);
-			msg = "Press Enter to Play" + ((mining.getGameState() == GameState.NEW_GAME) ?
-					"!" : " again!");
-			g.drawString(msg, CENTER_X - g.getFontMetrics().stringWidth(msg) / 2, CENTER_Y);
-			break;
-		
-		case PAUSED:
-			drawPausedString = true;	
-		case INGAME:	// fall-trough
-			for (int row = 0; row < blocks[0].length; row++) 
-				for (int col = 0; col < blocks[0][row].length; col++) {
-					if (blocks[0][row][col].getType() == BlockType.VOID)
-						blocks[1][row][col].render(g);
-					else blocks[0][row][col].render(g);
-				}
-			player.render(g);
-			renderDigging(g);
-			
-			if (drawPausedString) {
-				g.setFont(LARGE_FONT);
-				g.setColor(Color.RED);
-				msg = "PAUSED";
-				g.drawString(msg, CENTER_X - g.getFontMetrics().stringWidth(msg) / 2, CENTER_Y);
-			}
-			break;
-		}
+		player.respawn();
 	}
 	
 	private void renderDigging(Graphics g) {
@@ -142,18 +84,6 @@ public class GameGrid extends javax.swing.JPanel{
 		case 3: BlockType.DIG_STATE_3.render(player.getDigPos().x, player.getDigPos().y, g); break;
 		case 4: BlockType.DIG_STATE_4.render(player.getDigPos().x, player.getDigPos().y, g); break;
 		}
-	}
-	
-	private void setBlock(int layer, int row, int col, BlockType type) {
-		blocks[layer][row][col] = new Block(type, row, col, this);
-	}
-	
-	public Block getBlock(int layer, int row, int col) {
-		return blocks[layer][row][col];
-	}
-	
-	public Block getBlockAtPosition(int layer, Point p) {
-		return blocks[layer][p.y / BLOCK_SIZE][p.x / BLOCK_SIZE];
 	}
 	
 	/**
@@ -180,5 +110,38 @@ public class GameGrid extends javax.swing.JPanel{
 			break;
 		}
 		return null;
+	}
+	
+	/**
+	 * Check for the block at a given position
+	 * @param layer The layer in the grid to check
+	 * @param p The position to check
+	 * @return The block at the position
+	 */
+	public Block getBlockAtPosition(int layer, Point p) {
+		return blocks[layer][p.y / BLOCK_SIZE][p.x / BLOCK_SIZE];
+	}
+	
+	public Block getBlock(int layer, int row, int col) {
+		return blocks[layer][row][col];
+	}
+	
+	public void setBlock(int layer, int row, int col, BlockType type) {
+		blocks[layer][row][col] = new Block(type, row, col, this);
+	}
+	
+	public Block digBlock(int row, int col) {
+		Block b = getBlock(0, row, col);
+		setBlock(0, row, col, BlockType.VOID);
+		return b;
+	}
+	
+	/**
+	 * Converts an actual coordiante position to a grid position
+	 * @param p The coordinates to convert
+	 * @return The grid position of the input coordinates
+	 */
+	public static Point coordToGridPos(Point p) {
+		return new Point(p.x / BLOCK_SIZE, p.y / BLOCK_SIZE);
 	}
 }

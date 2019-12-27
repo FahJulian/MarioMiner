@@ -11,6 +11,9 @@ public class Player extends GridObject{
 	/** The collision handler responsible for all player related collisions */
 	public final PlayerCollisionHandler COLLISIONS = new PlayerCollisionHandler(this);
 	
+	/** Whether or not the player is an admin / has additional rights */
+	private boolean godMode;
+	
 	/** The direction the player is currently digging in */
 	private Direction digDir = null;
 	/** The state the Digging is currently in */
@@ -20,11 +23,31 @@ public class Player extends GridObject{
 	/** The block position that is being dug */
 	private Point digPos;
 	
+	/** The players health: min = 0, max = 100 */
+	private int health;
+	
 	/** Keeps track of whether or not the player is walking left (index 0) and right (index 1) */
 	private boolean[] walking = new boolean[] {false, false};
 	
-	public Player(int x, int y, int size, GameGrid grid, String img_path) {
-		super(x, y, size, grid, img_path);
+	/** The players inventory -> Index 0-8 is the tool-bar, 9-35 the rest */
+	private Holdable[] inventory;
+	/** The correlating numbers of blocks in each grid slot */
+	private int[] inventoryAmounts;
+	/** The tool-bar slot that is currently selected */
+	private int selectedSlot = 0;
+	
+	public Player(int x, int y, int size, GameGrid grid, boolean godMode) {
+		super(x, y, size, grid);
+		this.godMode = godMode;
+		
+		inventory = new Holdable[36];
+		for (int i = 0; i < inventory.length; i ++) inventory[i] = null; 
+		inventoryAmounts = new int[36];
+		for (int i = 0; i < inventoryAmounts.length; i++) inventoryAmounts[i] = 0;
+		
+		health = 100;
+		
+		setImg("rsc/img/player/" + getTool().getPlayerImgFileExtension() + ".png");
 	}
 
 	@Override
@@ -36,7 +59,24 @@ public class Player extends GridObject{
 
 	@Override
 	public void render(Graphics g) {
+		setImg("rsc/img/player/" + getTool().getPlayerImgFileExtension() + ".png");
 		super.render(g);
+	}
+	
+	/**
+	 * Resets all values to default and changes position to the spawning position
+	 */
+	public void respawn() {
+		health = 100;
+		x = GameGrid.SPAWN_POS.x;
+		y = GameGrid.SPAWN_POS.y;
+		velX = 0;
+		velY = 0;
+		walking = new boolean[] {false, false};
+		inventory = new Holdable[36];
+		for (int i = 0; i < inventory.length; i ++) inventory[i] = null; 
+		inventoryAmounts = new int[36];
+		for (int i = 0; i < inventoryAmounts.length; i++) inventoryAmounts[i] = 0;
 	}
 
 	private void tickMovement() {
@@ -51,32 +91,42 @@ public class Player extends GridObject{
 		for (int j = 1; j <= velY; j++) 
 			if (COLLISIONS.canMoveOnePx(Direction.DOWN))
 				moveOnePx(Direction.DOWN);
+			else {
+				if (velY >= 19) health -= Math.pow(velY, 1.5) / 4;
+				velY = 0;
+			}
 		
 		for (int j = -1; j >= velY; j--) 
 			if (COLLISIONS.canMoveOnePx(Direction.UP)) 
 				moveOnePx(Direction.UP);
+			else velY = 0;
 	}
 	
 	private void tickGravity() {
 		if (!COLLISIONS.isStandingOnBlock()) velY += 1;
-		else velY = 0;
 	}
 	
 	private void tickDig() {
-		if (!COLLISIONS.isDigStillViable()) stopDigging();
+		if (!COLLISIONS.isDigStillAllowed()) stopDigging();
 		
-		if (digDir != null && System.currentTimeMillis() - digTimer > 1000) {
+		if (digDir != null && System.currentTimeMillis() - digTimer > 
+			grid.getBlockAtPosition(0, digPos).getType().getDigSpeed(getTool())) {
+			
 			if (digState < 4) {
 				digState++;
 				digTimer = System.currentTimeMillis();
 			}
 			if (digState == 4) {
-				grid.digBlock(digPos.y / GameGrid.BLOCK_SIZE + 1, digPos.x / GameGrid.BLOCK_SIZE);
+				pickUpBlock(grid.digBlock(digPos.y / GameGrid.BLOCK_SIZE, digPos.x / GameGrid.BLOCK_SIZE).getType(), selectedSlot);
 				stopDigging();
 			}
 		}
 	}
 	
+	/**
+	 * Digs the next diggable block in a given direction, if it is near enough
+	 * @param dir
+	 */
 	public void startDiggingIfViable(Direction dir) {
 		if (isDigging()) return;
 		
@@ -90,7 +140,7 @@ public class Player extends GridObject{
 			this.digPos = null;
 		}
 		
-		if (!COLLISIONS.isDigStartViable()) stopDigging();
+		if (!COLLISIONS.isDigStartAllowed()) stopDigging();
 	}
 	
 	public void stopDigging() {
@@ -128,8 +178,58 @@ public class Player extends GridObject{
 		}
 	}
 	
+	/**
+	 * If player is standing on solid ground, starts jumping up
+	 */
 	public void jump() {
 		if (COLLISIONS.isStandingOnBlock()) velY -= 13;
+	}
+	
+	public void placeSelectedBlock(Direction dir) {
+		if (!(inventory[selectedSlot] instanceof BlockType)) return;
+		
+		BlockType blockToPlace = (BlockType) (inventory[selectedSlot]);
+		
+		if (inventory[selectedSlot] != null && COLLISIONS.isBlockPlaceAllowed(dir) && blockToPlace.isDiggable()) {
+			
+			switch (dir) {
+			case UP: 	grid.setBlock(0, getRow() - 1, getCenterCol(), blockToPlace);	 	break;
+			case DOWN: 	grid.setBlock(0, getBottomRow() + 1, getCenterCol(), blockToPlace); break;
+			case LEFT: 	grid.setBlock(0, getCenterRow(), getCol() - 1, blockToPlace); 		break;
+			case RIGHT: grid.setBlock(0, getCenterRow(), getRightCol() + 1, blockToPlace); 	break;
+			}
+		
+			inventoryAmounts[selectedSlot] -= 1;
+			if (inventoryAmounts[selectedSlot] == 0)
+				inventory[selectedSlot] = null;
+		}
+	}
+	
+	private void pickUpHoldable(Holdable type, int slot, int max, boolean firstCycle) {
+		// Try putting the item in the requested slot
+		if (inventory[slot] == type && inventoryAmounts[slot] < max) {
+			inventoryAmounts[slot] += 1;
+			return;
+		}else if (inventory[slot] == null) {
+			inventory[slot] = type;
+			inventoryAmounts[slot] += 1;
+			return;
+			
+		// If slot can't be filled, find another slot via recursion -> Start from slot 0, go up then
+		}else if (firstCycle)
+			pickUpHoldable(type, 0, max, false);
+		else if (slot < 35)
+			pickUpHoldable(type, slot + 1, max, false);
+		else
+			System.err.println("Inventory full");
+	}
+	
+	public void pickUpTool(ToolType type, int slot) {
+		pickUpHoldable(type, slot, 1, true);
+	}
+	
+	private void pickUpBlock(BlockType type, int slot) {
+		pickUpHoldable(type, slot, 64, true);
 	}
 	
 	private void moveOnePx(Direction dir) {
@@ -139,6 +239,14 @@ public class Player extends GridObject{
 		case UP: y -= 1; return;
 		case DOWN: y += 1; return;
 		}
+	}
+	
+	public void emptyInventorySlot(int slot) {
+		this.inventory[slot] = null;
+	}
+	
+	public void kill() {
+		this.health = 0;
 	}
 	
 	public boolean isDigging() {
@@ -163,5 +271,36 @@ public class Player extends GridObject{
 		case RIGHT: return walking[1];
 		default: System.err.println("Cant walk up or down"); return false;
 		}
+	}
+	
+	public int getHealth() {
+		return health;
+	}
+	
+	public Holdable[] getInventory() {
+		return this.inventory;
+	}
+	
+	public int[] getInventoryAmounts() {
+		return this.inventoryAmounts;
+	}
+	
+	public int getSelectedSlot() {
+		return this.selectedSlot;
+	}
+	
+	public void selectSlot(int slot) {
+		this.selectedSlot = slot;
+	}
+	
+	public boolean isInGodMode() {
+		return this.godMode;
+	}
+	
+	public ToolType getTool() {
+		if (inventory[selectedSlot] == null) return ToolType.HAND;
+		else if (inventory[selectedSlot] instanceof BlockType) return ToolType.BLOCK;
+		
+		else return (ToolType) inventory[selectedSlot];
 	}
 }
