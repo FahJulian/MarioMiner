@@ -13,8 +13,8 @@ public class Game extends javax.swing.JPanel{
 	/** The Serial Version UID */
 	private static final long serialVersionUID = 5905864191282833136L;
 	
-	public static final int CONTENT_WIDTH = 960 / GameGrid.BLOCK_SIZE * GameGrid.BLOCK_SIZE;
-	public static final int CONTENT_HEIGHT = 512 / GameGrid.BLOCK_SIZE * GameGrid.BLOCK_SIZE;
+	public static final int CONTENT_WIDTH = (int) (1920 / 1.5f) / GameGrid.BLOCK_SIZE * GameGrid.BLOCK_SIZE;
+	public static final int CONTENT_HEIGHT = (int) (1024 / 1.5f) / GameGrid.BLOCK_SIZE * GameGrid.BLOCK_SIZE;
 	
 	public static final int CONTENT_CENTER_X = CONTENT_WIDTH / 2;
 	public static final int CONTENT_CENTER_Y = CONTENT_HEIGHT / 2;
@@ -55,8 +55,8 @@ public class Game extends javax.swing.JPanel{
 		grid = new GameGrid(this);
 		hud = new HUD(this);
 		
-		// Initialize the Window,
-		// then resize the Window to match wanted content size
+		// Initialize the Window, then resize it because of the name bar that is part
+		// of the JFrame height, but not of the content height
 		window = new Window(CONTENT_WIDTH, CONTENT_HEIGHT, "MarioMiner", this);
 		int extraWidth = CONTENT_WIDTH - window.getContentPane().getSize().width;
 		int extraHeight = CONTENT_HEIGHT - window.getContentPane().getSize().height;

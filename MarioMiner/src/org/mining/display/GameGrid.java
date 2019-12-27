@@ -8,6 +8,7 @@ import org.mining.game.Block;
 import org.mining.game.BlockType;
 import org.mining.game.Direction;
 import org.mining.game.Player;
+import org.mining.managers.MapBuilder;
 
 public class GameGrid{
 	
@@ -19,7 +20,7 @@ public class GameGrid{
 	public static final int ROW_COUNT = Game.CONTENT_HEIGHT / BLOCK_SIZE;
 	
 	/** The default spawn position of the player */
-	public static final Point SPAWN_POS = new Point(Game.CONTENT_CENTER_X,  Game.CONTENT_CENTER_Y - 2 * BLOCK_SIZE);
+	public static final Point SPAWN_POS = new Point(Game.CONTENT_CENTER_X, (int) (ROW_COUNT * 0.25f) * BLOCK_SIZE);
 	
 	/** The Game instance the GridPanel is part of */
 	private Game game;
@@ -34,7 +35,7 @@ public class GameGrid{
 		this.game = game; 
 		this.blocks = new Block[2][ROW_COUNT][COL_COUNT];
 		this.player = new Player(SPAWN_POS.x, SPAWN_POS.y, BLOCK_SIZE - 7, this,
-				"rsc/img/" + BLOCK_SIZE + "/player_small.png");
+				"rsc/img/blocks/player_small.png", true);
 	}
 
 	public void tick() {
@@ -46,8 +47,11 @@ public class GameGrid{
 	public void render(Graphics g) {
 		for (int row = 0; row < blocks[0].length; row++) 
 			for (int col = 0; col < blocks[0][row].length; col++) {
-				if (blocks[0][row][col].getType() == BlockType.VOID)
+				if (blocks[0][row][col].getType() == BlockType.VOID) {
 					blocks[1][row][col].render(g);
+					if (blocks[1][row][col].getType() != BlockType.AIR)
+						BlockType.LAYER2_COVER.render(col * BLOCK_SIZE, row * BLOCK_SIZE, g);
+				}
 				else blocks[0][row][col].render(g);
 			}
 		player.render(g);
@@ -63,24 +67,14 @@ public class GameGrid{
 	
 	/** Resets all blocks in the grid to the default */
 	public void reset() {
-		// Set the first 25% of the screen to be air blocks
-		for (int row = 0; row <= ROW_COUNT * 0.25f; row++)
-			for (int col = 0; col < COL_COUNT; col++) {
-				setBlock(0, row, col, BlockType.AIR);
-				setBlock(1, row, col, BlockType.AIR);
-			}
-		
-		// Set the rest of the screen to be stone with dirt behind
-		for (int row = (int) (ROW_COUNT * 0.25f + 1); row < ROW_COUNT; row++)
-			for (int col = 0; col < COL_COUNT; col++) {
-				setBlock(0, row, col, BlockType.STONE);
-				setBlock(1, row, col, BlockType.DIRT);
-			}
+		blocks = MapBuilder.buildFlatMap(this, ROW_COUNT, COL_COUNT, 
+				new int[] {4, 5, 8, ROW_COUNT},
+				new BlockType[] {BlockType.VOID, BlockType.GRASS, BlockType.DIRT, BlockType.STONE }, 
+				new int[] {4, ROW_COUNT}, 
+				new BlockType[] {BlockType.AIR, BlockType.DIRT});
 		
 		player.respawn();
 	}
-	
-	
 	
 	private void renderDigging(Graphics g) {
 		if (player.getDigDir() == null) return;
@@ -118,7 +112,13 @@ public class GameGrid{
 		}
 		return null;
 	}
-
+	
+	/**
+	 * Check for the block at a given position
+	 * @param layer The layer in the grid to check
+	 * @param p The position to check
+	 * @return The block at the position
+	 */
 	public Block getBlockAtPosition(int layer, Point p) {
 		return blocks[layer][p.y / BLOCK_SIZE][p.x / BLOCK_SIZE];
 	}
@@ -131,10 +131,17 @@ public class GameGrid{
 		blocks[layer][row][col] = new Block(type, row, col, this);
 	}
 	
-	public void digBlock(int row, int col) {
+	public Block digBlock(int row, int col) {
+		Block b = getBlock(0, row, col);
 		setBlock(0, row, col, BlockType.VOID);
+		return b;
 	}
 	
+	/**
+	 * Converts an actual coordiante position to a grid position
+	 * @param p The coordinates to convert
+	 * @return The grid position of the input coordinates
+	 */
 	public static Point coordToGridPos(Point p) {
 		return new Point(p.x / BLOCK_SIZE, p.y / BLOCK_SIZE);
 	}

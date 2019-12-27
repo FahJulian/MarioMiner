@@ -63,6 +63,8 @@ public class PlayerCollisionHandler {
 			b = player.grid.getNextDiggableBlock(0, p.y, p.x, dir);
 			break;
 		case DOWN:
+			if (player.getBottomRow() == player.grid.ROW_COUNT - 2) return true;
+			
 			p = GameGrid.coordToGridPos(new Point(player.getCenterX(), player.getY() + player.getSize()));
 			b = player.grid.getNextDiggableBlock(0, p.y, p.x, dir);
 			break;
