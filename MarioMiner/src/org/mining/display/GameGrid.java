@@ -34,8 +34,7 @@ public class GameGrid{
 	public GameGrid(Game game) {
 		this.game = game; 
 		this.blocks = new Block[2][ROW_COUNT][COL_COUNT];
-		this.player = new Player(SPAWN_POS.x, SPAWN_POS.y, BLOCK_SIZE - 7, this,
-				"rsc/img/blocks/player_small.png", true);
+		this.player = new Player(SPAWN_POS.x, SPAWN_POS.y, BLOCK_SIZE - 7, this, true);
 	}
 
 	public void tick() {

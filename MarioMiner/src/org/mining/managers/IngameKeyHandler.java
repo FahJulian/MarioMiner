@@ -2,11 +2,14 @@ package org.mining.managers;
 
 import java.awt.event.KeyEvent;
 
+import javax.swing.JOptionPane;
+
 import org.mining.display.Game;
 import org.mining.display.GameGrid;
 import org.mining.display.GameState;
 import org.mining.game.Direction;
 import org.mining.game.Player;
+import org.mining.game.ToolType;
 
 public class IngameKeyHandler implements java.awt.event.KeyListener {
 
@@ -69,10 +72,29 @@ public class IngameKeyHandler implements java.awt.event.KeyListener {
 			player.jump();
 			break;
 			
-		case KeyEvent.VK_K:
-			if (player.isInGodMode() && ctrlPressed)
-				player.kill();
-			break;
+		case KeyEvent.VK_T:
+			if (player.isInGodMode() && ctrlPressed) {
+				String s = JOptionPane.showInputDialog("Choose a tool");
+				if (s == null) player.emptyInventorySlot(player.getSelectedSlot());
+				switch (s) {
+				case "WP": player.pickUpTool(ToolType.WOODEN_PICKAXE, player.getSelectedSlot()); 	break;
+				case "SP": player.pickUpTool(ToolType.STONE_PICKAXE, player.getSelectedSlot()); 	break;
+				case "GP": player.pickUpTool(ToolType.GOLD_PICKAXE, player.getSelectedSlot()); 		break;
+				case "IP": player.pickUpTool(ToolType.IRON_PICKAXE, player.getSelectedSlot()); 		break;
+				case "DP": player.pickUpTool(ToolType.DIAMOND_PICKAXE, player.getSelectedSlot()); 	break;
+				case "WA": player.pickUpTool(ToolType.WOODEN_AXE, player.getSelectedSlot()); 		break;
+				case "SA": player.pickUpTool(ToolType.STONE_AXE, player.getSelectedSlot()); 		break;
+				case "GA": player.pickUpTool(ToolType.GOLD_AXE, player.getSelectedSlot()); 			break;
+				case "IA": player.pickUpTool(ToolType.IRON_AXE, player.getSelectedSlot()); 			break;
+				case "DA": player.pickUpTool(ToolType.DIAMOND_AXE, player.getSelectedSlot()); 		break;
+				case "WS": player.pickUpTool(ToolType.WOODEN_SHOVEL, player.getSelectedSlot()); 	break;
+				case "SS": player.pickUpTool(ToolType.STONE_SHOVEL, player.getSelectedSlot()); 		break;
+				case "GS": player.pickUpTool(ToolType.GOLD_SHOVEL, player.getSelectedSlot()); 		break;
+				case "IS": player.pickUpTool(ToolType.IRON_SHOVEL, player.getSelectedSlot()); 		break;
+				case "DS": player.pickUpTool(ToolType.DIAMOND_SHOVEL, player.getSelectedSlot()); 	break;
+				}
+				break;
+			}
 			
 		case KeyEvent.VK_SHIFT:
 			shiftPressed = true;
