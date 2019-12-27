@@ -4,6 +4,8 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 
+import org.mining.game.BlockType;
+
 
 public class HUD{
 	
@@ -62,13 +64,15 @@ public class HUD{
 				g.drawImage(icon, tbX + i * 60 + 4, tbY + 4, null);
 				
 				// Draw amount of items in the stack
-				g.setColor(Color.WHITE);
-				g.setFont(Game.SMALL_FONT);
-				String amountString = String.valueOf(game.grid.player.getInventoryAmounts()[i]);
-				
-				g.drawString(amountString, 
-						tbX + i * 60 + tbItemSize - g.getFontMetrics().stringWidth(amountString) - 7,
-						tbY + tbItemSize - 7);
+				if (game.grid.player.getInventory()[i] instanceof BlockType) {
+					g.setColor(Color.WHITE);
+					g.setFont(Game.SMALL_FONT);
+					String amountString = String.valueOf(game.grid.player.getInventoryAmounts()[i]);
+					
+					g.drawString(amountString, 
+							tbX + i * 60 + tbItemSize - g.getFontMetrics().stringWidth(amountString) - 7,
+							tbY + tbItemSize - 7);
+				}
 			}
 		}
 	}

@@ -38,19 +38,30 @@ public class PlayerCollisionHandler {
 	}
 	
 	public boolean isDigStartAllowed(){
-		return !(player.getDigPos() == null ||
-				player.getDigPos().getX() - player.getX() > 2 * player.getSize() ||
-				player.getX() - player.getDigPos().getX() > 2 * player.getSize() ||
-				player.getDigPos().getY() - player.getY() > 2 * player.getSize() ||
-				player.getY() - player.getDigPos().getY() > 2 * player.getSize());
+		if (player.getDigPos() == null)
+			return false;
+		
+		// If the block thats about to get dug isn't diggable with the players tool, return false
+		if (!player.grid.getBlockAtPosition(0, player.getDigPos()).getType().isDiggableWithTool(player.getTool()))
+			return false;
+		
+		return !(player.getDigPos().getX() - player.getX() > 2 * player.getSize() ||
+				 player.getX() - player.getDigPos().getX() > 2 * player.getSize() ||
+				 player.getDigPos().getY() - player.getY() > 2 * player.getSize() ||
+				 player.getY() - player.getDigPos().getY() > 2 * player.getSize());
 	}
 	
 	public boolean isDigStillAllowed() {
-		return !(player.getDigPos() == null ||
-				player.getDigPos().getX() - player.getX() > 2.5f * player.getSize() ||
-				player.getX() - player.getDigPos().getX() > 2.5f * player.getSize() ||
-				player.getDigPos().getY() - player.getY() > 2.5f * player.getSize() ||
-				player.getY() - player.getDigPos().getY() > 2.5f * player.getSize());
+		if (player.getDigPos() == null)
+			return false;
+		
+		if (!player.grid.getBlockAtPosition(0, player.getDigPos()).getType().isDiggableWithTool(player.getTool()))
+			return false;
+		
+		return !(player.getDigPos().getX() - player.getX() > 2.5f * player.getSize() ||
+				 player.getX() - player.getDigPos().getX() > 2.5f * player.getSize() ||
+				 player.getDigPos().getY() - player.getY() > 2.5f * player.getSize() ||
+				 player.getY() - player.getDigPos().getY() > 2.5f * player.getSize());
 	}
 	
 	public boolean isBlockPlaceAllowed(Direction dir) {
@@ -63,10 +74,12 @@ public class PlayerCollisionHandler {
 			b = player.grid.getNextDiggableBlock(0, p.y, p.x, dir);
 			break;
 		case DOWN:
-			if (player.getBottomRow() == player.grid.ROW_COUNT - 2) return true;
+			
 			
 			p = GameGrid.coordToGridPos(new Point(player.getCenterX(), player.getY() + player.getSize()));
 			b = player.grid.getNextDiggableBlock(0, p.y, p.x, dir);
+			
+			if ((player.getBottomRow() == GameGrid.ROW_COUNT - 2) && b == null) return true;
 			break;
 		case LEFT:
 			p = GameGrid.coordToGridPos(new Point(player.getX(), player.getCenterY()));
