@@ -2,6 +2,7 @@ package org.mining.display;
 
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.image.BufferedImage;
 
 
 public class HUD{
@@ -56,18 +57,19 @@ public class HUD{
 			else
 				g.fillRect(tbX + i * 60 + 2, tbY + 2, tbItemSize - 4, tbItemSize - 4);
 			
-			if (game.grid.player.getInventory()[i] != null)
-				switch (game.grid.player.getInventory()[i]) {
-				case DIRT:
-					g.setColor(new Color(60, 40, 0));
-					g.fillRect(tbX + i *60 + 5, tbY + 5, tbItemSize - 10, tbItemSize - 10);
-					break;
-				case STONE:
-					g.setColor(new Color(110, 110, 110));
-					g.fillRect(tbX + i *60 + 5, tbY + 5, tbItemSize - 10, tbItemSize - 10);
-				default:
-					break;
-				}
+			if (game.grid.player.getInventory()[i] != null) {
+				BufferedImage icon = game.grid.player.getInventory()[i].getTBIcon();
+				g.drawImage(icon, tbX + i * 60 + 4, tbY + 4, null);
+				
+				// Draw amount of items in the stack
+				g.setColor(Color.WHITE);
+				g.setFont(Game.SMALL_FONT);
+				String amountString = String.valueOf(game.grid.player.getInventoryAmounts()[i]);
+				
+				g.drawString(amountString, 
+						tbX + i * 60 + tbItemSize - g.getFontMetrics().stringWidth(amountString) - 7,
+						tbY + tbItemSize - 7);
+			}
 		}
 	}
 }

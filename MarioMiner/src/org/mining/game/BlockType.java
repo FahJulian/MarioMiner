@@ -9,6 +9,8 @@ import org.mining.managers.DataHandler;
 
 public enum BlockType {
 	
+	/** Tile that covers everything in layer2, black with low opacity */
+	LAYER2_COVER("layer2Cover.png", false, false),
 	/** Tile that renders a transparent screen */
 	VOID("void.png", false, true),
 	/** tile that is currently being digged - state 1 */
@@ -21,6 +23,8 @@ public enum BlockType {
 	DIG_STATE_4("digging/state_4.png", false, false),	
 	/** Dirt tile */
 	DIRT("dirt.png", true, false),	
+	/** Grass tile */
+	GRASS("grass.png", true, false),
 	/** Background (air) tile */
 	AIR("air.png", false, true),	
 	/* Stone tile */
@@ -30,6 +34,9 @@ public enum BlockType {
 	
 	/** The Tile's rendering image */
 	private BufferedImage img;
+	
+	/** The Tile's tool-bar icon image */
+	private BufferedImage tbIcon;
 	
 	/** Specifies whether a tile can be dug -> e.g air cant, stone can */
 	private boolean diggable;
@@ -42,9 +49,12 @@ public enum BlockType {
 	 * @param image_src The sourcepath of the Tile's rendering image
 	 */ 
 	private BlockType(String image_src, boolean diggable, boolean walkable) {
-		this.img = DataHandler.loadImage("rsc/img/" + GameGrid.BLOCK_SIZE + "/" + image_src);
+		this.img = DataHandler.loadImage("rsc/img/blocks/" + image_src);
 		this.diggable = diggable;
 		this.walkable = walkable;
+		
+		if (diggable)
+			this.tbIcon = DataHandler.loadImage("rsc/img/icons/" + image_src);
 	}
 	
 	/** Renders a tile at a given position. Used to render
@@ -81,5 +91,9 @@ public enum BlockType {
 	 */
 	public boolean isWalkable() {
 		return this.walkable;
+	}
+	
+	public BufferedImage getTBIcon() {
+		return this.tbIcon;
 	}
 }

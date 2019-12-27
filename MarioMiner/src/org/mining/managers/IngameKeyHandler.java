@@ -20,7 +20,9 @@ public class IngameKeyHandler implements java.awt.event.KeyListener {
 	
 	/** A switch for whether or not shift is pressed */
 	private boolean shiftPressed = false;
-
+	/** A switch for whether or not ctrl is pressed */
+	private boolean ctrlPressed = false;
+	
 	public IngameKeyHandler(Game game, GameGrid grid, Player player) {
 		this.game = game;
 		this.grid = grid;
@@ -36,6 +38,7 @@ public class IngameKeyHandler implements java.awt.event.KeyListener {
 			player.stopDigging();
 			game.pause();
 			shiftPressed = false;
+			ctrlPressed = false;
 			break;
 			
 		case KeyEvent.VK_UP:
@@ -66,8 +69,16 @@ public class IngameKeyHandler implements java.awt.event.KeyListener {
 			player.jump();
 			break;
 			
+		case KeyEvent.VK_K:
+			if (player.isInGodMode() && ctrlPressed)
+				player.kill();
+			break;
+			
 		case KeyEvent.VK_SHIFT:
 			shiftPressed = true;
+			break;
+		case KeyEvent.VK_CONTROL:
+			ctrlPressed = true;
 			break;
 		}
 	}
@@ -104,6 +115,9 @@ public class IngameKeyHandler implements java.awt.event.KeyListener {
 		
 		case KeyEvent.VK_SHIFT:
 			shiftPressed = false;
+			break;
+		case KeyEvent.VK_CONTROL:
+			ctrlPressed = false;
 			break;
 		}	
 	}
