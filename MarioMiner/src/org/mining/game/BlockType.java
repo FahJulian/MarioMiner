@@ -77,6 +77,7 @@ public enum BlockType implements Holdable{
 	 */
 	private BlockType(String image_src, boolean walkable, boolean diggableByHand, ToolType minimumToolType) {
 		this.img = DataHandler.loadImage("rsc/img/blocks/" + image_src);
+		this.tbIcon = DataHandler.loadImage("rsc/img/icons/" + image_src);
 		
 		this.walkable = walkable;
 		
